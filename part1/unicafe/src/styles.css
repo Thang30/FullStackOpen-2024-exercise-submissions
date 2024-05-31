@@ -1,0 +1,20 @@
+table {
+    border-collapse: collapse;
+    /* background-color: transparent; */
+}
+
+th,
+td {
+    padding: 10px;
+    border: 1px solid #352e2e;
+    text-align: left;
+    /* background-color: white; */
+}
+
+/* th {
+    background-color: #7f95c6;
+} */
+
+td.numeric {
+    text-align: left;
+}
