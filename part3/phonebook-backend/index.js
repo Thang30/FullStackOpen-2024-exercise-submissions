@@ -7,7 +7,6 @@ const Person = require('./models/person');
 const app = express();
 const port = 3001;
 
-// Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(error => console.log('Error connecting to MongoDB:', error.message));
@@ -24,8 +23,7 @@ morgan.token('body', (req, res) => {
 
 app.use(morgan(':method :url :status :response-time ms [:body]'));
 
-// Get all persons
-app.get('/api/persons', (req, res) => {
+app.get('/api/persons', (req, res, next) => {
   Person.find({})
     .then(persons => {
       res.json(persons);
@@ -33,7 +31,14 @@ app.get('/api/persons', (req, res) => {
     .catch(error => next(error));
 });
 
-// Get a single person by ID
+app.get('/info', (req, res, next) => {
+  Person.countDocuments({})
+    .then(count => {
+      res.send(`<p>Phonebook has info for ${count} people</p><p>${new Date()}</p>`);
+    })
+    .catch(error => next(error));
+});
+
 app.get('/api/persons/:id', (req, res, next) => {
   Person.findById(req.params.id)
     .then(person => {
@@ -46,7 +51,6 @@ app.get('/api/persons/:id', (req, res, next) => {
     .catch(error => next(error));
 });
 
-// Add a new person
 app.post('/api/persons', (req, res, next) => {
   const { name, number } = req.body;
 
@@ -61,7 +65,26 @@ app.post('/api/persons', (req, res, next) => {
     .catch(error => next(error));
 });
 
-// Delete a person
+app.put('/api/persons/:id', (req, res, next) => {
+  const { name, number } = req.body;
+
+  if (!name || !number) {
+    return res.status(400).json({ error: 'Missing name or number' });
+  }
+
+  const updatedPerson = { name, number };
+
+  Person.findByIdAndUpdate(req.params.id, updatedPerson, { new: true, runValidators: true, context: 'query' })
+    .then(result => {
+      if (result) {
+        res.json(result);
+      } else {
+        res.status(404).json({ error: 'Person not found' });
+      }
+    })
+    .catch(error => next(error));
+});
+
 app.delete('/api/persons/:id', (req, res, next) => {
   Person.findByIdAndDelete(req.params.id)
     .then(result => {
@@ -74,7 +97,6 @@ app.delete('/api/persons/:id', (req, res, next) => {
     .catch(error => next(error));
 });
 
-// Error handling middleware
 const errorHandler = (error, req, res, next) => {
   console.error(error.message);
 
