@@ -1,26 +1,21 @@
 const express = require('express');
-const morgan = require('morgan'); 
+const morgan = require('morgan');
 const cors = require('cors');
+const Person = require('./models/person');
+require('dotenv').config();
 
 const app = express();
-const port = process.env.PORT || 3001
-
-const phonebook = [
-  { id: '1', name: 'Arto Hellas', number: '040-123456' },
-  { id: '2', name: 'Ada Lovelace', number: '39-44-5323523' },
-  { id: '3', name: 'Dan Abramov', number: '12-43-234345' },
-  { id: '4', name: 'Mary Poppendieck', number: '39-23-6423122' },
-];
+const port = 3001;
 
 app.use(cors({
-  origin: 'http://localhost:5173' 
+  origin: 'http://localhost:5173',
 }));
 
 app.use(express.json());
 
 morgan.token('body', (req, res) => {
   if (req.method === 'POST' && req.body) {
-    return JSON.stringify(req.body); 
+    return JSON.stringify(req.body);
   }
   return ' - ';
 });
@@ -28,70 +23,68 @@ morgan.token('body', (req, res) => {
 app.use(morgan(':method :url :status :response-time ms [:body]'));
 
 app.get('/api/persons', (req, res) => {
-  res.json(phonebook);
+  Person.find({}).then(persons => {
+    res.json(persons);
+  });
 });
 
 app.get('/api/persons/:id', (req, res) => {
-  const id = req.params.id;
-  const person = phonebook.find((p) => p.id === id);
-
-  if (person) {
-    res.json(person);
-  } else {
-    res.status(404).send(`Person with id ${id} not found.`);
-  }
+  Person.findById(req.params.id).then(person => {
+    if (person) {
+      res.json(person);
+    } else {
+      res.status(404).send('Person not found');
+    }
+  }).catch(err => res.status(400).send('Invalid ID'));
 });
 
 app.delete('/api/persons/:id', (req, res) => {
-  const id = req.params.id;
-  const personIndex = phonebook.findIndex((p) => p.id === id);
-
-  if (personIndex !== -1) {
-    phonebook.splice(personIndex, 1); 
-    res.status(204).send(); 
-  } else {
-    res.status(404).send(`Person with id ${id} not found.`);
-  }
+  Person.findByIdAndRemove(req.params.id).then(result => {
+    if (result) {
+      res.status(204).end();
+    } else {
+      res.status(404).send('Person not found');
+    }
+  }).catch(err => res.status(400).send('Invalid ID'));
 });
 
 app.post('/api/persons', (req, res) => {
-  const newPerson = req.body; 
+  const { name, number } = req.body;
 
-  if (!newPerson.name || !newPerson.number) {
-    return res.status(400).json({ error: 'Missing name or number' }); 
-  }
-
-  if (phonebook.find((p) => p.name === newPerson.name)) {
-    return res.status(409).json({ error: 'name must be unique' }); 
-  }
-
-  let uniqueId;
-  do {
-    uniqueId = Math.floor(Math.random() * 1000000000).toString();
-  } while (phonebook.find((p) => p.id === uniqueId)); 
-
-  phonebook.push({ id: uniqueId, ...newPerson });
-
-  res.status(201).json({ ...newPerson, id: uniqueId }); 
-});
-
-// Route to update a phonebook entry (PUT)
-app.put('/api/persons/:id', (req, res) => {
-  const id = req.params.id;
-  const updatedPerson = req.body;
-
-  if (!updatedPerson.name || !updatedPerson.number) {
+  if (!name || !number) {
     return res.status(400).json({ error: 'Missing name or number' });
   }
 
-  const personIndex = phonebook.findIndex((p) => p.id === id);
+  const newPerson = new Person({ name, number });
 
-  if (personIndex !== -1) {
-    phonebook[personIndex] = { id, ...updatedPerson };
-    res.json(phonebook[personIndex]);
-  } else {
-    res.status(404).send(`Person with id ${id} not found.`);
+  newPerson.save()
+    .then(savedPerson => {
+      res.status(201).json(savedPerson);
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).json({ error: 'Failed to save person' });
+    });
+});
+
+
+app.put('/api/persons/:id', (req, res) => {
+  const { name, number } = req.body;
+
+  if (!name || !number) {
+    return res.status(400).json({ error: 'Missing name or number' });
   }
+
+  const updatedPerson = { name, number };
+
+  Person.findByIdAndUpdate(req.params.id, updatedPerson, { new: true })
+    .then(updatedPerson => {
+      if (updatedPerson) {
+        res.json(updatedPerson);
+      } else {
+        res.status(404).send('Person not found');
+      }
+    }).catch(err => res.status(400).send('Invalid ID'));
 });
 
 app.listen(port, () => {
