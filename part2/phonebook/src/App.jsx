@@ -8,8 +8,8 @@ import './style.css'; // Assuming style.css exists
 const App = () => {
   const [people, setPeople] = useState([]);
   const [filter, setFilter] = useState('');
-  const [notification, setNotification] = useState(null);
-  const [notificationTimeout, setNotificationTimeout] = useState(null);
+  const [notification, setNotification] = useState(null); // Notification message
+  const [notificationTimeout, setNotificationTimeout] = useState(null); // Timeout ID
 
   useEffect(() => {
     const fetchPeople = async () => {
@@ -28,19 +28,20 @@ const App = () => {
       if (window.confirm(`${existingPerson.name} is already added to phonebook, replace the old number with a new one?`)) {
         const updatedPerson = await Backend.updatePerson(existingPerson.id, newPerson);
         setPeople(people.map((person) => (person.id === updatedPerson.id ? updatedPerson : person)));
-        setNotification(`Updated ${existingPerson.name}'s number.`);
+        setNotification(`Updated ${existingPerson.name}'s number.`); // Success message
       }
     } else {
       // Add new person
       const addedPerson = await Backend.addPerson(newPerson);
       setPeople(people.concat(addedPerson));
       setFilter(''); // Clear filter after adding a person
-      setNotification(`Added ${newPerson.name} to phonebook.`);
+      setNotification(`Added ${newPerson.name} to phonebook.`); // Success message
     }
 
+    // Set notification timeout (optional)
     const timeoutId = setTimeout(() => {
       setNotification(null);
-    }, 4000); // Clear notification after 4 seconds
+    }, 4000); // Clear notification after 4 seconds (adjust as needed)
     setNotificationTimeout(timeoutId);
   };
 
@@ -53,7 +54,7 @@ const App = () => {
   );
 
   useEffect(() => {
-    // Clear notification on form submission (optional)
+    // Clear notification timeout on component unmount (optional)
     return () => clearTimeout(notificationTimeout);
   }, [notificationTimeout]);
 
