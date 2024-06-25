@@ -21,8 +21,20 @@ const savePhonebook = () => {
 // Middleware to parse JSON request bodies
 app.use(express.json());
 
-// Middleware to log HTTP requests in the console (tiny preset)
-app.use(morgan('tiny'));
+// // Middleware to log HTTP requests in the console (tiny preset)
+// app.use(morgan('tiny'));
+
+morgan.token('body', (req, res) => {
+  // Check if it's a POST request and the request body exists
+  if (req.method === 'POST' && req.body) {
+    return JSON.stringify(req.body); // Stringify the request body
+  }
+  return ' - '; // Placeholder if not a POST request or no body
+});
+
+app.use(morgan(':method :url :status :response-time ms [:body]'));
+
+
 
 // Route for phonebook entries (GET all)
 app.get('/api/persons', (req, res) => {
