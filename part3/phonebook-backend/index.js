@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan'); 
+const cors = require('cors');
 
 const app = express();
 const port = 3001;
@@ -10,6 +11,10 @@ const phonebook = [
   { id: '3', name: 'Dan Abramov', number: '12-43-234345' },
   { id: '4', name: 'Mary Poppendieck', number: '39-23-6423122' },
 ];
+
+app.use(cors({
+  origin: 'http://localhost:5173' 
+}));
 
 app.use(express.json());
 
@@ -68,6 +73,25 @@ app.post('/api/persons', (req, res) => {
   phonebook.push({ id: uniqueId, ...newPerson });
 
   res.status(201).json({ ...newPerson, id: uniqueId }); 
+});
+
+// Route to update a phonebook entry (PUT)
+app.put('/api/persons/:id', (req, res) => {
+  const id = req.params.id;
+  const updatedPerson = req.body;
+
+  if (!updatedPerson.name || !updatedPerson.number) {
+    return res.status(400).json({ error: 'Missing name or number' });
+  }
+
+  const personIndex = phonebook.findIndex((p) => p.id === id);
+
+  if (personIndex !== -1) {
+    phonebook[personIndex] = { id, ...updatedPerson };
+    res.json(phonebook[personIndex]);
+  } else {
+    res.status(404).send(`Person with id ${id} not found.`);
+  }
 });
 
 app.listen(port, () => {
