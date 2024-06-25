@@ -3,74 +3,91 @@ import Backend from './Backend';
 import Filter from './components/Filter';
 import PersonForm from './components/PersonForm';
 import People from './components/People';
-import './style.css'; // Assuming style.css exists
+import Notification from './components/Notification';
 
 const App = () => {
   const [people, setPeople] = useState([]);
   const [filter, setFilter] = useState('');
-  const [notification, setNotification] = useState(null); // Notification message
-  const [notificationTimeout, setNotificationTimeout] = useState(null); // Timeout ID
+  const [notification, setNotification] = useState({ message: null, isError: false });
 
   useEffect(() => {
-    const fetchPeople = async () => {
-      const data = await Backend.getAllPeople();
-      setPeople(data);
-    };
-
-    fetchPeople();
+    Backend.getAllPeople()
+      .then(initialPeople => setPeople(initialPeople))
+      .catch(error => {
+        console.error(error);
+        setNotification({ message: 'People could not be obtained', isError: true });
+        setTimeout(() => setNotification({ message: null, isError: false }), 5000);
+      });
   }, []);
 
-  const addOrUpdatePerson = async (newPerson) => {
-    const existingPerson = people.find((person) => person.name === newPerson.name);
+  const addOrUpdatePerson = (newPerson) => {
+    const existingPerson = people.find(person => person.name === newPerson.name);
 
     if (existingPerson) {
-      // Update existing person
       if (window.confirm(`${existingPerson.name} is already added to phonebook, replace the old number with a new one?`)) {
-        const updatedPerson = await Backend.updatePerson(existingPerson.id, newPerson);
-        setPeople(people.map((person) => (person.id === updatedPerson.id ? updatedPerson : person)));
-        setNotification(`Updated ${existingPerson.name}'s number.`); // Success message
+        const updatedPerson = { ...existingPerson, number: newPerson.number };
+
+        Backend.updatePerson(existingPerson.id, updatedPerson)
+          .then(returnedPerson => {
+            setPeople(people.map(person => person.id !== existingPerson.id ? person : returnedPerson));
+            setNotification({ message: `Updated ${returnedPerson.name}`, isError: false });
+            setTimeout(() => setNotification({ message: null, isError: false }), 5000);
+          })
+          .catch(error => {
+            console.error(error);
+            setNotification({ message: `Information of ${newPerson.name} has already been removed from server`, isError: true });
+            setPeople(people.filter(p => p.id !== existingPerson.id));
+            setTimeout(() => setNotification({ message: null, isError: false }), 5000);
+          });
       }
     } else {
-      // Add new person
-      const addedPerson = await Backend.addPerson(newPerson);
-      setPeople(people.concat(addedPerson));
-      setFilter(''); // Clear filter after adding a person
-      setNotification(`Added ${newPerson.name} to phonebook.`); // Success message
+      Backend.addPerson(newPerson)
+        .then(returnedPerson => {
+          setPeople(people.concat(returnedPerson));
+          setNotification({ message: `Added ${returnedPerson.name}`, isError: false });
+          setTimeout(() => setNotification({ message: null, isError: false }), 5000);
+        })
+        .catch(error => {
+          console.error(error);
+          setNotification({ message: `Could not add ${newPerson.name}`, isError: true });
+          setTimeout(() => setNotification({ message: null, isError: false }), 5000);
+        });
     }
-
-    // Set notification timeout (optional)
-    const timeoutId = setTimeout(() => {
-      setNotification(null);
-    }, 4000); // Clear notification after 4 seconds (adjust as needed)
-    setNotificationTimeout(timeoutId);
   };
 
   const handleFilterChange = (event) => {
     setFilter(event.target.value.toLowerCase());
   };
 
-  const peopleToShow = people.filter((person) =>
+  const handleDeletePerson = (id, name) => {
+    if (window.confirm(`Delete ${name} ?`)) {
+      Backend.deletePerson(id)
+        .then(() => {
+          setPeople(people.filter(person => person.id !== id));
+          setNotification({ message: `Deleted ${name}`, isError: false });
+          setTimeout(() => setNotification({ message: null, isError: false }), 5000);
+        })
+        .catch(error => {
+          console.error(error);
+          setNotification({ message: `Information of ${name} has already been removed from server`, isError: true });
+          setTimeout(() => setNotification({ message: null, isError: false }), 5000);
+        });
+    }
+  };
+
+  const peopleToShow = people.filter(person =>
     person.name.toLowerCase().includes(filter.toLowerCase())
   );
-
-  useEffect(() => {
-    // Clear notification timeout on component unmount (optional)
-    return () => clearTimeout(notificationTimeout);
-  }, [notificationTimeout]);
 
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notification.message} isError={notification.isError} />
       <Filter value={filter} onChange={handleFilterChange} />
       <h3>Add a new person</h3>
       <PersonForm onSubmit={addOrUpdatePerson} />
-      {notification && (
-        <div className="notification">
-          <p>{notification}</p>
-        </div>
-      )}
       <h3>Numbers</h3>
-      <People people={peopleToShow} />
+      <People people={peopleToShow} onDelete={handleDeletePerson} />
     </div>
   );
 };

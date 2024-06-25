@@ -28,4 +28,3 @@ const PersonForm = ({ onSubmit }) => {
 };
 
 export default PersonForm;
-
