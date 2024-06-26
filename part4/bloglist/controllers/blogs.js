@@ -1,6 +1,15 @@
 const Blog = require('../models/blog');
 const blogsRouter = require('express').Router();
 const User = require('../models/user');
+const jwt = require('jsonwebtoken');
+
+const getTokenFrom = request => {
+  const authorization = request.get('authorization');
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    return authorization.substring(7);
+  }
+  return null;
+};
 
 blogsRouter.get('/', async (req, res, next) => {
   try {
@@ -12,28 +21,30 @@ blogsRouter.get('/', async (req, res, next) => {
 });
 
 blogsRouter.post('/', async (req, res, next) => {
+  const { title, author, url, likes } = req.body;
+
+  if (!req.user) {
+    return res.status(401).json({ error: 'token missing or invalid' });
+  }
+
+  const newBlog = new Blog({
+    title,
+    author,
+    url,
+    likes: likes || 0,
+    user: req.user._id
+  });
+
   try {
-    const users = await User.find({});
-    const user = users[0]; 
-
-    const newBlog = new Blog({
-      ...req.body,
-      user: user._id
-    });
-
-    if (!newBlog) {
-      return res.status(400).json({ error: 'Missing blog data' });
-    }
-
     const savedBlog = await newBlog.save();
-    user.blogs = user.blogs.concat(savedBlog._id);
-    await user.save();
-
+    req.user.blogs = req.user.blogs.concat(savedBlog._id);
+    await req.user.save();
     res.status(201).json(savedBlog);
   } catch (error) {
     next(error);
   }
 });
+
 
 blogsRouter.delete('/:id', async (req, res, next) => {
   try {
