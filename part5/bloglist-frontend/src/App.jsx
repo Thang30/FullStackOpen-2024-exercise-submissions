@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import loginService from './services/login';
 import blogService from './services/blogs';
-import Blog from './components/Blog'; 
+import Blog from './components/Blog';
+import BlogForm from './components/BlogForm';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -52,6 +53,15 @@ const App = () => {
     window.localStorage.removeItem('loggedBlogAppUser');
   };
 
+  const addBlog = async (blogObject) => {
+    try {
+      const returnedBlog = await blogService.create(blogObject);
+      setBlogs(blogs.concat(returnedBlog));
+    } catch (exception) {
+      console.error('Error creating blog', exception);
+    }
+  };
+
   if (user === null) {
     return (
       <div>
@@ -85,8 +95,9 @@ const App = () => {
     <div>
       <h2>blogs</h2>
       <p>{user.name} logged in <button onClick={handleLogout}>logout</button></p>
+      <BlogForm createBlog={addBlog} />
       {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} /> // Use the Blog component
+        <Blog key={blog.id} blog={blog} />
       )}
     </div>
   );
