@@ -39,20 +39,26 @@ blogsRouter.post('/', async (req, res, next) => {
 });
 
 
-blogsRouter.delete('/:id', async (req, res, next) => {
+bloblogsRouter.delete('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const result = await Blog.findByIdAndDelete(id);
+    const blog = await Blog.findById(id);
 
-    if (!result) {
+    if (!blog) {
       return res.status(404).json({ error: 'Blog not found' });
     }
 
+    if (blog.user.toString() !== req.user.id.toString()) {
+      return res.status(401).json({ error: 'only the creator can delete this blog' });
+    }
+
+    await Blog.findByIdAndDelete(id);
     res.status(204).end();
   } catch (error) {
     next(error);
   }
 });
+
 
 blogsRouter.patch('/:id', async (req, res, next) => {
   try {
