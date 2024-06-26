@@ -1,16 +1,38 @@
 const mongoose = require('mongoose');
 const supertest = require('supertest');
-const app = require('../app'); // Assuming your app starts the server
+const app = require('../app');
 const config = require('../utils/config');
 const api = supertest(app);
-const { test, describe, after, before } = require('node:test');
+const { test, describe, after, before, beforeEach } = require('node:test');
 const assert = require('node:assert');
 const Blog = require('../models/blog');
 
 describe('Blog API', () => {
   before(async () => {
     await mongoose.connect(config.MONGODB_URI);
-    await Blog.deleteMany({}); // Clear the database before each test suite
+  });
+
+  beforeEach(async () => {
+    await Blog.deleteMany({});
+
+    const initialBlogs = [
+      {
+        title: 'First Blog',
+        author: 'First Author',
+        url: 'http://firstblog.com',
+        likes: 1
+      },
+      {
+        title: 'Second Blog',
+        author: 'Second Author',
+        url: 'http://secondblog.com',
+        likes: 2
+      }
+    ];
+
+    const blogObjects = initialBlogs.map(blog => new Blog(blog));
+    const promiseArray = blogObjects.map(blog => blog.save());
+    await Promise.all(promiseArray);
   });
 
   test('GET /api/blogs returns all blogs in JSON', async () => {
@@ -23,15 +45,6 @@ describe('Blog API', () => {
   });
 
   test('blogs returned have an id property instead of _id', async () => {
-    const newBlog = new Blog({
-      title: 'Test Blog',
-      author: 'Test Author',
-      url: 'http://testurl.com',
-      likes: 0
-    });
-
-    await newBlog.save();
-      
     const response = await api
       .get('/api/blogs')
       .expect(200)
@@ -39,8 +52,6 @@ describe('Blog API', () => {
 
     const blogs = response.body;
     assert.strictEqual(blogs.length > 0, true);
-      
-    console.log('First blog:', blogs[0]);
 
     blogs.forEach(blog => {
       assert.strictEqual(blog.id !== undefined, true);
@@ -50,10 +61,10 @@ describe('Blog API', () => {
 
   test('POST /api/blogs creates a new blog post', async () => {
     const newBlog = {
-      title: 'New Blog Title6',
+      title: 'New Blog Title',
       author: 'New Blog Author',
       url: 'http://newblogurl.com',
-      likes: 6
+      likes: 5
     };
 
     const initialResponse = await api.get('/api/blogs');
@@ -118,6 +129,41 @@ describe('Blog API', () => {
       .send(newBlog)
       .expect(400);
   });
+
+  test('DELETE /api/blogs/:id deletes a blog post', async () => {
+    const initialResponse = await api.get('/api/blogs');
+    const initialBlogs = initialResponse.body;
+    const blogToDelete = initialBlogs[0];
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204);
+
+    const finalResponse = await api.get('/api/blogs');
+    const finalBlogs = finalResponse.body;
+
+    assert.strictEqual(finalBlogs.length, initialBlogs.length - 1);
+    const ids = finalBlogs.map(blog => blog.id);
+    assert.strictEqual(ids.includes(blogToDelete.id), false);
+  });
+    
+  test('PATCH /api/blogs/:id updates the likes of a blog post', async () => {
+    const initialResponse = await api.get('/api/blogs');
+    const initialBlogs = initialResponse.body;
+    const blogToUpdate = initialBlogs[0];
+
+    const updatedLikes = { likes: blogToUpdate.likes + 1 };
+
+    const response = await api
+      .patch(`/api/blogs/${blogToUpdate.id}`)
+      .send(updatedLikes)
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+
+    const updatedBlog = response.body;
+    assert.strictEqual(updatedBlog.likes, updatedLikes.likes);
+  });
+
 
   after(async () => {
     await mongoose.connection.close();

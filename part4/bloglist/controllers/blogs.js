@@ -11,25 +11,51 @@ blogsRouter.get('/', async (req, res, next) => {
 });
 
 blogsRouter.post('/', async (req, res, next) => {
-  const { title, url, author, likes } = req.body;
-
-  if (!title || !url) {
-    return res.status(400).json({ error: 'Title or URL missing' });
-  }
-
-  const newBlog = new Blog({
-    title,
-    url,
-    author,
-    likes
-  });
+  const newBlog = new Blog(req.body);
 
   try {
+    if (!newBlog) {
+      return res.status(400).json({ error: 'Missing blog data' });
+    }
+
     const savedBlog = await newBlog.save();
     res.status(201).json(savedBlog);
   } catch (error) {
     next(error);
   }
 });
+
+blogsRouter.delete('/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await Blog.findByIdAndDelete(id);
+
+    if (!result) {
+      return res.status(404).json({ error: 'Blog not found' });
+    }
+
+    res.status(204).end();
+  } catch (error) {
+    next(error);
+  }
+});
+
+blogsRouter.patch('/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const update = req.body;
+
+    const updatedBlog = await Blog.findByIdAndUpdate(id, update, { new: true, runValidators: true });
+
+    if (!updatedBlog) {
+      return res.status(404).json({ error: 'Blog not found' });
+    }
+
+    res.json(updatedBlog);
+  } catch (error) {
+    next(error);
+  }
+});
+
 
 module.exports = blogsRouter;
