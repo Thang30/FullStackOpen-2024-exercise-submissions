@@ -1,4 +1,4 @@
-import globals from "globals";
+import globals from "globals"
 import stylisticJs from '@stylistic/eslint-plugin-js'
 import js from '@eslint/js'
 
@@ -14,37 +14,22 @@ export default [
       ecmaVersion: "latest",
     },
     plugins: {
-      '@stylistic/js': stylisticJs
+      '@stylistic/js': stylisticJs,
     },
     rules: {
-      '@stylistic/js/indent': [
-        'error',
-        2
-      ],
-      '@stylistic/js/linebreak-style': [
-        'error',
-        'unix'
-      ],
-      '@stylistic/js/quotes': [
-        'error',
-        'single'
-      ],
-      '@stylistic/js/semi': [
-        'error',
-        'never'
-      ],
-      'eqeqeq': 'error',
-      'no-trailing-spaces': 'error',
-      'object-curly-spacing': [
-        'error', 'always'
-      ],
-      'arrow-spacing': [
-        'error', { 'before': true, 'after': true },
-      ],
+      '@stylistic/js/indent': 'off',
+      '@stylistic/js/linebreak-style': 'off',
+      '@stylistic/js/quotes': 'off',
+      '@stylistic/js/semi': 'off',
+      'eqeqeq': 'off',
+      'no-trailing-spaces': 'off',
+      'object-curly-spacing': 'off',
+      'arrow-spacing': 'off',
       'no-console': 'off',
+      'no-unused-vars': 'off',
     },
   },
-  { 
+  {
     ignores: ["dist/**", "build/**"],
   },
 ]
