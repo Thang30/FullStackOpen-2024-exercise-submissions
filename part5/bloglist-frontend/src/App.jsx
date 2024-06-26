@@ -10,7 +10,7 @@ import Togglable from './components/Togglable';
 const App = () => {
   const [blogs, setBlogs] = useState([]);
   const [user, setUser] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   const blogFormRef = useRef();
 
@@ -33,10 +33,14 @@ const App = () => {
       window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user));
       blogService.setToken(user.token);
       setUser(user);
-    } catch (exception) {
-      setErrorMessage('Wrong credentials');
+      setNotification({ content: 'Login successful', type: 'success' });
       setTimeout(() => {
-        setErrorMessage(null);
+        setNotification(null);
+      }, 5000);
+    } catch (exception) {
+      setNotification({ content: 'Wrong credentials', type: 'error' });
+      setTimeout(() => {
+        setNotification(null);
       }, 5000);
     }
   };
@@ -52,14 +56,14 @@ const App = () => {
       blogFormRef.current.toggleVisibility();
       const returnedBlog = await blogService.create(blogObject);
       setBlogs(blogs.concat(returnedBlog));
-      setErrorMessage(`a new blog ${returnedBlog.title} by ${returnedBlog.author} added`);
+      setNotification({ content: `a new blog ${returnedBlog.title} by ${returnedBlog.author} added`, type: 'success' });
       setTimeout(() => {
-        setErrorMessage(null);
+        setNotification(null);
       }, 5000);
     } catch (exception) {
-      setErrorMessage('Error adding blog');
+      setNotification({ content: 'Error adding blog', type: 'error' });
       setTimeout(() => {
-        setErrorMessage(null);
+        setNotification(null);
       }, 5000);
     }
   };
@@ -69,7 +73,7 @@ const App = () => {
     const updatedBlog = {
       ...blog,
       likes: blog.likes + 1,
-      user: blog.user.id // Ensure the user is represented by its id
+      user: blog.user.id, // Ensure the user is represented by its id
     };
 
     const returnedBlog = await blogService.update(id, updatedBlog);
@@ -81,24 +85,23 @@ const App = () => {
       try {
         await blogService.remove(blog.id);
         setBlogs(blogs.filter(b => b.id !== blog.id));
-        setErrorMessage(`Blog ${blog.title} removed`);
+        setNotification({ content: `Blog ${blog.title} removed`, type: 'success' });
         setTimeout(() => {
-          setErrorMessage(null);
+          setNotification(null);
         }, 5000);
       } catch (exception) {
-        setErrorMessage('Error removing blog');
+        setNotification({ content: 'Error removing blog', type: 'error' });
         setTimeout(() => {
-          setErrorMessage(null);
+          setNotification(null);
         }, 5000);
       }
     }
   };
 
-
   return (
     <div>
       <h2>blogs</h2>
-      <Notification message={errorMessage} />
+      <Notification message={notification} />
       {user === null ?
         <Togglable buttonLabel="log in">
           <LoginForm handleLogin={handleLogin} />
