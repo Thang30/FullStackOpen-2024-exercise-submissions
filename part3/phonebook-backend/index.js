@@ -5,8 +5,8 @@ const mongoose = require('mongoose');
 const Person = require('./models/person');
 
 const app = express();
-const port = 3001;
-app.use(express.static('dist'));
+const PORT = process.env.PORT || 3001
+app.use(express.static('dist'))
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
@@ -116,6 +116,6 @@ const errorHandler = (error, req, res, next) => {
 
 app.use(errorHandler);
 
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });
