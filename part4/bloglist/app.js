@@ -13,7 +13,7 @@ mongoose.set('strictQuery', false);
 
 logger.info('connecting to', config.MONGODB_URI);
 
-const mongoUrl = process.env.MONGODB_URI;
+const mongoUrl = config.MONGODB_URI;
 
 mongoose.connect(mongoUrl)
   .then(() => console.log('Connected to MongoDB'))
