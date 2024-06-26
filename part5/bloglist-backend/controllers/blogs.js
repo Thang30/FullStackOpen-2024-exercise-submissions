@@ -65,7 +65,7 @@ blogsRouter.patch('/:id', async (req, res, next) => {
     const { id } = req.params;
     const update = req.body;
 
-    const updatedBlog = await Blog.findByIdAndUpdate(id, update, { new: true, runValidators: true });
+    const updatedBlog = await Blog.findByIdAndUpdate(id, update, { new: true, runValidators: true }).populate('user', { username: 1, name: 1 });
 
     if (!updatedBlog) {
       return res.status(404).json({ error: 'Blog not found' });
@@ -76,5 +76,6 @@ blogsRouter.patch('/:id', async (req, res, next) => {
     next(error);
   }
 });
+
 
 module.exports = blogsRouter;
