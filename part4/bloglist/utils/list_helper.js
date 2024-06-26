@@ -1,5 +1,4 @@
 const dummy = (blogs) => {
-  // This function always returns 1, regardless of the input (can be removed later)
   return 1;
 };
 
@@ -9,7 +8,7 @@ const totalLikes = (blogs) => {
 };
 
 const favoriteBlog = (blogs) => {
-  if (!blogs.length) return null; // Handle empty list
+  if (!blogs.length) return null; 
 
   const mostLikedBlog = blogs.reduce((favorite, current) =>
     current.likes > favorite.likes ? current : favorite
