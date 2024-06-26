@@ -1,1 +1,1 @@
-Link to the deployed phonebook-backend is [here](https://phonebook-backend-tuey.onrender.com/)
+Link to the deployed phonebook app is [here](https://phonebook-backend-tuey.onrender.com/)
