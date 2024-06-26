@@ -11,13 +11,20 @@ blogsRouter.get('/', async (req, res, next) => {
 });
 
 blogsRouter.post('/', async (req, res, next) => {
-  const newBlog = new Blog(req.body);
+  const { title, url, author, likes } = req.body;
+
+  if (!title || !url) {
+    return res.status(400).json({ error: 'Title or URL missing' });
+  }
+
+  const newBlog = new Blog({
+    title,
+    url,
+    author,
+    likes
+  });
 
   try {
-    if (!newBlog) {
-      return res.status(400).json({ error: 'Missing blog data' });
-    }
-
     const savedBlog = await newBlog.save();
     res.status(201).json(savedBlog);
   } catch (error) {
