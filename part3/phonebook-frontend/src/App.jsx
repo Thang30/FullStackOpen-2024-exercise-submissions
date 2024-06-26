@@ -35,7 +35,10 @@ const App = () => {
           })
           .catch(error => {
             console.error(error);
-            setNotification({ message: `Information of ${existingPerson.name} has already been removed from server`, isError: true });
+            const errorMessage = error.response && error.response.data && error.response.data.error
+              ? error.response.data.error
+              : `Information of ${existingPerson.name} has already been removed from server`;
+            setNotification({ message: errorMessage, isError: true });
             setPeople(people.filter(p => p.id !== existingPerson.id));
             setTimeout(() => setNotification({ message: null, isError: false }), 5000);
           });
@@ -49,7 +52,10 @@ const App = () => {
         })
         .catch(error => {
           console.error(error);
-          setNotification({ message: `Could not add ${newPerson.name}`, isError: true });
+          const errorMessage = error.response && error.response.data && error.response.data.error
+            ? error.response.data.error
+            : `Could not add ${newPerson.name}`;
+          setNotification({ message: errorMessage, isError: true });
           setTimeout(() => setNotification({ message: null, isError: false }), 5000);
         });
     }
@@ -75,19 +81,15 @@ const App = () => {
     }
   };
 
-  const peopleToShow = people.filter(person =>
-    person.name.toLowerCase().includes(filter.toLowerCase())
-  );
-
   return (
     <div>
       <h2>Phonebook</h2>
       <Notification message={notification.message} isError={notification.isError} />
       <Filter value={filter} onChange={handleFilterChange} />
-      <h3>Add a new person</h3>
+      <h2>Add a new</h2>
       <PersonForm onSubmit={addOrUpdatePerson} />
-      <h3>Numbers</h3>
-      <People people={peopleToShow} onDelete={handleDeletePerson} />
+      <h2>Numbers</h2>
+      <People people={people.filter(person => person.name.toLowerCase().includes(filter))} deletePerson={handleDeletePerson} />
     </div>
   );
 };

@@ -7,7 +7,7 @@ const PersonForm = ({ onSubmit }) => {
   const handleSubmit = (event) => {
     event.preventDefault();
     const newPerson = { name: newName, number: newNumber };
-    onSubmit(newPerson);
+    onSubmit(newPerson);  
     setNewName('');
     setNewNumber('');
   };

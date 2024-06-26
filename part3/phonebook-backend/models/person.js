@@ -11,17 +11,27 @@ mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true })
     console.log('Error connecting to MongoDB:', error.message);
   });
 
-const personSchema = new mongoose.Schema({
-  name: String,
-  number: String,
-});
+const phoneValidator = (number) => {
+  if (number.length < 8) return false;
 
-personSchema.set('toJSON', {
-  transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
-    delete returnedObject._id;
-    delete returnedObject.__v;
+  const regex = /^\d{2,3}-\d+$/;
+  return regex.test(number);
+};
+
+const personSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    minlength: [3, 'name `{VALUE}` is not of the correct format. Please add a better name'],
+    required: [true, 'name `{VALUE}` is not of the correct format. Please add a better name']
   },
+  number: {
+    type: String,
+    required: [true, 'phone number `{VALUE}` is not of the correct format. Please add a better phone number'],
+    validate: {
+      validator: phoneValidator,
+      message: props => `phone number ${props.value} is not of the correct format. Please add a better phone number`
+    }
+  }
 });
 
 module.exports = mongoose.model('Person', personSchema);
