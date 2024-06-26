@@ -41,22 +41,28 @@ blogsRouter.post('/', async (req, res, next) => {
 blogsRouter.delete('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const blog = await Blog.findById(id);
+    console.log(`Attempting to delete blog with id: ${id}`);
 
+    const blog = await Blog.findById(id);
     if (!blog) {
+      console.log('Blog not found');
       return res.status(404).json({ error: 'Blog not found' });
     }
 
     if (blog.user.toString() !== req.user.id.toString()) {
+      console.log('User not authorized to delete this blog');
       return res.status(401).json({ error: 'only the creator can delete this blog' });
     }
 
     await Blog.findByIdAndDelete(id);
+    console.log('Blog deleted successfully');
     res.status(204).end();
   } catch (error) {
+    console.log('Error deleting blog:', error);
     next(error);
   }
 });
+
 
 
 
