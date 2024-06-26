@@ -93,7 +93,3 @@ describe('favorite blog', () => {
 });
 
 
-// Optional: Comment out test.only if needed for manual test execution
-test.only('All tests should pass!', () => {
-  // ... repeat all tests here
-});
