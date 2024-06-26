@@ -1,3 +1,4 @@
+// src/services/blogs.js
 import axios from 'axios';
 const baseUrl = '/api/blogs';
 
@@ -22,7 +23,11 @@ const create = async newObject => {
 };
 
 const update = async (id, newObject) => {
-  const response = await axios.put(`${baseUrl}/${id}`, newObject);
+  const config = {
+    headers: { Authorization: token },
+  };
+
+  const response = await axios.patch(`${baseUrl}/${id}`, newObject, config);
   return response.data;
 };
 
