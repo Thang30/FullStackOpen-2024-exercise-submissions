@@ -6,6 +6,7 @@ const Person = require('./models/person');
 
 const app = express();
 const port = 3001;
+app.use(express.static('dist'));
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
