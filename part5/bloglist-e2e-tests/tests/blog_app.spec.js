@@ -49,7 +49,7 @@ describe('Blog app', () => {
     });
   });
 
-  describe.only('When logged in', () => {
+  describe('When logged in', () => {
     beforeEach(async ({ page }) => {
       await page.goto('http://localhost:5173');
       await page.click('text=log in');
@@ -79,5 +79,37 @@ describe('Blog app', () => {
       const newBlogTitle = page.locator('.blog-title:has-text("New Blog Title")');
       await expect(newBlogTitle).toBeVisible();
     });
+      
+    test.only('a blog can be liked', async ({ page }) => {
+      // Click the "create new blog" button to reveal the blog form
+      await page.click('text=create new blog');
+
+      // Fill in the blog details
+      await page.fill('input[placeholder="title"]', 'New Blog Title');
+      await page.fill('input[placeholder="author"]', 'Blog Author');
+      await page.fill('input[placeholder="url"]', 'http://newblogurl.com');
+
+      // Click the "create" button to submit the blog
+      await page.click('form >> text=create');
+
+      // Verify the new blog is visible in the list of blogs
+      const newBlogTitle = page.locator('.blog-title:has-text("New Blog Title")');
+      await expect(newBlogTitle).toBeVisible();
+
+      // Click the "view" button to reveal blog details
+      await page.click('.blog >> text=view');
+
+      // Get the current number of likes
+      const likeCountElement = page.locator('.blog-likes');
+      const initialLikeCountText = await likeCountElement.textContent();
+      const initialLikeCount = parseInt(initialLikeCountText.match(/\d+/)[0]);
+      console.log("The initial like count is:", initialLikeCount);
+      // Click the "like" button
+      await page.click('.blog-likes >> text=like');
+
+      // Wait for the like count to increase
+      await expect(likeCountElement).toHaveText(`likes ${initialLikeCount + 1} like`);
+    });
+
   });
 });
