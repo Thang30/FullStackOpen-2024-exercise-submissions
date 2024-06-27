@@ -111,7 +111,7 @@ describe('Blog app', () => {
       await expect(likeCountElement).toHaveText(`likes ${initialLikeCount + 1} like`);
     });
 
-    test.only('the user who added the blog can delete it', async ({ page }) => {
+    test('the user who added the blog can delete it', async ({ page }) => {
       await page.click('text=create new blog');
       await page.fill('input[placeholder="title"]', 'New Blog Title');
       await page.fill('input[placeholder="author"]', 'Blog Author');
@@ -126,8 +126,12 @@ describe('Blog app', () => {
         await dialog.accept();
       });
 
+      // Ensure the remove button is visible before clicking
+      const removeButton = page.locator('.blog >> text=remove');
+      await expect(removeButton).toBeVisible();
+
       // Click the "remove" button to delete the blog
-      await page.click('.blog >> text=remove');
+      await removeButton.click();
 
       // Verify the blog is no longer visible
       await expect(newBlogTitle).not.toBeVisible();

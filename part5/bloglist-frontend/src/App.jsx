@@ -55,6 +55,12 @@ const App = () => {
     try {
       blogFormRef.current.toggleVisibility();
       const returnedBlog = await blogService.create(blogObject);
+      // Add the user object to the blog to ensure consistency
+      returnedBlog.user = {
+        id: user.id,
+        username: user.username,
+        name: user.name
+      };
       setBlogs(blogs.concat(returnedBlog));
       setNotification({ content: `a new blog ${returnedBlog.title} by ${returnedBlog.author} added`, type: 'success' });
       setTimeout(() => {
@@ -67,6 +73,7 @@ const App = () => {
       }, 5000);
     }
   };
+
 
   const handleLike = async (id) => {
     const blog = blogs.find(b => b.id === id);
