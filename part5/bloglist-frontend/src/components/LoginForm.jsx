@@ -1,5 +1,3 @@
-// src/components/LoginForm.jsx
-
 import { useState } from 'react';
 
 const LoginForm = ({ handleLogin }) => {
@@ -16,16 +14,20 @@ const LoginForm = ({ handleLogin }) => {
       <h2>Log in to application</h2>
       <form onSubmit={onSubmit}>
         <div>
-          username
+          <label htmlFor="username">username</label>
           <input
+            id="username"
+            name="Username"
             type="text"
             value={username}
             onChange={({ target }) => setUsername(target.value)}
           />
         </div>
         <div>
-          password
+          <label htmlFor="password">password</label>
           <input
+            id="password"
+            name="Password"
             type="password"
             value={password}
             onChange={({ target }) => setPassword(target.value)}
