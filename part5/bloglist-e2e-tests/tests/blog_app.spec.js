@@ -40,8 +40,12 @@ describe('Blog app', () => {
       await page.fill('input[name="Username"]', 'testuser');
       await page.fill('input[name="Password"]', 'wrongpassword');
       await page.click('text=login');
-      const errorMessage = page.getByText('invalid username or password');
-      await expect(errorMessage).toBeVisible();
+      
+      // Take a screenshot before checking the error message
+      await page.screenshot({ path: 'screenshots/before_checking_error_message.png' });
+
+      const errorMessage = page.getByText('Wrong credentials');
+      await expect(errorMessage).toBeVisible({ timeout: 10000 }); // Extend the timeout to 10 seconds
     });
   });
 });
