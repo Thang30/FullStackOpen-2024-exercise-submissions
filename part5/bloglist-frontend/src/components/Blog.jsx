@@ -9,7 +9,7 @@ const Blog = ({ blog, handleLike, handleRemove, user }) => {
     paddingLeft: 2,
     border: 'solid',
     borderWidth: 1,
-    marginBottom: 5
+    marginBottom: 5,
   };
 
   const toggleVisibility = () => {
@@ -19,20 +19,20 @@ const Blog = ({ blog, handleLike, handleRemove, user }) => {
   const showRemoveButton = user && blog.user && user.username === blog.user.username;
 
   return (
-    <div style={blogStyle}>
+    <div style={blogStyle} className="blog">
       <div>
-        {blog.title} {blog.author}
-        <button onClick={toggleVisibility}>{visible ? 'hide' : 'view'}</button>
+        <span className="blog-title">{blog.title}</span> <span className="blog-author">{blog.author}</span>
+        <button onClick={toggleVisibility} className="toggle-button">{visible ? 'hide' : 'view'}</button>
       </div>
       {visible && (
-        <div>
-          <p>{blog.url}</p>
-          <p>
+        <div className="blog-details">
+          <p className="blog-url">{blog.url}</p>
+          <p className="blog-likes">
             likes {blog.likes} <button onClick={() => handleLike(blog.id)}>like</button>
           </p>
-          <p>{blog.user.name}</p>
+          <p className="blog-user">{blog.user.name}</p>
           {showRemoveButton && (
-            <button onClick={() => handleRemove(blog)}>remove</button>
+            <button onClick={() => handleRemove(blog)} className="remove-button">remove</button>
           )}
         </div>
       )}
