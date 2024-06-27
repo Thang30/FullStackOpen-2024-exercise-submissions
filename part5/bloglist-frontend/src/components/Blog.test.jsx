@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Blog from './Blog';
+import { describe, test, expect, vi } from 'vitest';
 
 describe('<Blog />', () => {
   const blog = {
@@ -16,16 +17,16 @@ describe('<Blog />', () => {
     },
   };
 
+  const mockHandler = vi.fn();
+
   test('renders title and author, but not URL or number of likes by default', () => {
     render(<Blog blog={blog} />);
 
-    // Check that title and author are rendered
     const title = screen.getByText('Test Blog Title');
     const author = screen.getByText('Test Author');
     expect(title).toBeDefined();
     expect(author).toBeDefined();
 
-    // Check that URL and likes are not rendered by default
     const url = screen.queryByText('http://testurl.com');
     const likes = screen.queryByText('likes 5');
     expect(url).toBeNull();
@@ -35,15 +36,27 @@ describe('<Blog />', () => {
   test('renders URL and number of likes when the button controlling the shown details has been clicked', async () => {
     render(<Blog blog={blog} />);
 
-    // Simulate user clicking the view button
     const user = userEvent.setup();
     const button = screen.getByText('view');
     await user.click(button);
 
-    // Check that URL and likes are rendered
     const url = screen.getByText('http://testurl.com');
     const likes = screen.getByText('likes 5');
     expect(url).toBeDefined();
     expect(likes).toBeDefined();
+  });
+
+  test('if the like button is clicked twice, the event handler the component received as props is called twice', async () => {
+    render(<Blog blog={blog} handleLike={mockHandler} />);
+
+    const user = userEvent.setup();
+    const viewButton = screen.getByText('view');
+    await user.click(viewButton);
+
+    const likeButton = screen.getByText('like');
+    await user.click(likeButton);
+    await user.click(likeButton);
+
+    expect(mockHandler.mock.calls).toHaveLength(2);
   });
 });
