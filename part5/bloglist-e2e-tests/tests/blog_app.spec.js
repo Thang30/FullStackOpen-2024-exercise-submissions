@@ -48,4 +48,36 @@ describe('Blog app', () => {
       await expect(errorMessage).toBeVisible({ timeout: 10000 }); // Extend the timeout to 10 seconds
     });
   });
+
+  describe.only('When logged in', () => {
+    beforeEach(async ({ page }) => {
+      await page.goto('http://localhost:5173');
+      await page.click('text=log in');
+      await page.fill('input[name="Username"]', 'testuser');
+      await page.fill('input[name="Password"]', 'testpassword');
+      await page.click('text=login');
+      const logoutButton = page.getByText('logout');
+      await expect(logoutButton).toBeVisible();
+        console.log("Successfully logged in!");
+    });
+
+    test('a new blog can be created', async ({ page }) => {
+      // Click the "create new blog" button to reveal the blog form
+      await page.click('text=create new blog');
+
+      // Fill in the blog details
+      await page.fill('input[placeholder="title"]', 'New Blog Title');
+      await page.fill('input[placeholder="author"]', 'Blog Author');
+      await page.fill('input[placeholder="url"]', 'http://newblogurl.com');
+
+      // Click the "create" button to submit the blog
+        //   await page.click('button:text("create")');
+      await page.click('form >> text=create');
+
+
+      // Verify the new blog is visible
+      const newBlogTitle = page.locator('.blog-title:has-text("New Blog Title")');
+      await expect(newBlogTitle).toBeVisible();
+    });
+  });
 });
