@@ -80,7 +80,7 @@ describe('Blog app', () => {
       await expect(newBlogTitle).toBeVisible();
     });
       
-    test.only('a blog can be liked', async ({ page }) => {
+    test('a blog can be liked', async ({ page }) => {
       // Click the "create new blog" button to reveal the blog form
       await page.click('text=create new blog');
 
@@ -109,6 +109,28 @@ describe('Blog app', () => {
 
       // Wait for the like count to increase
       await expect(likeCountElement).toHaveText(`likes ${initialLikeCount + 1} like`);
+    });
+
+    test.only('the user who added the blog can delete it', async ({ page }) => {
+      await page.click('text=create new blog');
+      await page.fill('input[placeholder="title"]', 'New Blog Title');
+      await page.fill('input[placeholder="author"]', 'Blog Author');
+      await page.fill('input[placeholder="url"]', 'http://newblogurl.com');
+      await page.click('form >> text=create');
+      const newBlogTitle = page.locator('.blog-title:has-text("New Blog Title")');
+      await expect(newBlogTitle).toBeVisible();
+      await page.click('.blog >> text=view');
+      
+      // Intercept the confirmation dialog and accept it
+      page.on('dialog', async dialog => {
+        await dialog.accept();
+      });
+
+      // Click the "remove" button to delete the blog
+      await page.click('.blog >> text=remove');
+
+      // Verify the blog is no longer visible
+      await expect(newBlogTitle).not.toBeVisible();
     });
 
   });
