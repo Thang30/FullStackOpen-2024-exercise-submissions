@@ -1,12 +1,15 @@
+// redux-anecdotes/src/main.jsx
 import ReactDOM from 'react-dom/client';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import App from './App';
 import anecdoteReducer from './reducers/anecdoteReducer';
+import filterReducer from './reducers/filterReducer';
 
 const store = configureStore({
   reducer: {
-    anecdotes: anecdoteReducer
+    anecdotes: anecdoteReducer,
+    filter: filterReducer
   }
 });
 
