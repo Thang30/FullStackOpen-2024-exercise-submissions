@@ -1,8 +1,9 @@
+// src/App.jsx
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { initializeAnecdotes } from './reducers/anecdoteReducer';
-import AnecdoteList from './components/AnecdoteList';
 import AnecdoteForm from './components/AnecdoteForm';
+import AnecdoteList from './components/AnecdoteList';
 import Notification from './components/Notification';
 import Filter from './components/Filter';
 
